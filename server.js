@@ -1,21 +1,30 @@
-// server.js
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 
-
 const app = express();
 
-// Configure CORS properly
+// Use Railway's PORT or fallback to 3001 locally
+const PORT = process.env.PORT || 3001;
+
+// Allow your Vercel frontend in production, localhost in dev
+const allowedOrigins = [
+  'http://localhost:3000',                       // local dev
+  'https://locate-my-city.vercel.app'        
+];
+
 const corsOptions = {
-  origin: 'http://localhost:3000', 
-  optionsSuccessStatus: 200
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
 };
+
 app.use(cors(corsOptions));
-
-const PORT = 3001;
-
 
 let rockCities = [];
 let springCities = {};
@@ -28,20 +37,20 @@ function flattenStateGroupedData(data) {
     return result;
 }
 
+// Load data
 try {
     rockCities = JSON.parse(fs.readFileSync(path.join(__dirname, 'rock_cities.json'), 'utf8'));
 } catch (error) {
     console.error('Error loading rock_cities.json:', error.message);
-    rockCities = []; // Fallback to empty array
+    rockCities = [];
 }
 
 try {
     springCities = JSON.parse(fs.readFileSync(path.join(__dirname, 'spring_cities.json'), 'utf8'));
 } catch (error) {
     console.error('Error loading spring_cities.json:', error.message);
-    springCities = {}; // Fallback to empty object
+    springCities = {};
 }
-
 
 // Serve location data
 app.get('/api/locations', (req, res) => {
@@ -107,5 +116,5 @@ app.get('/api/stats', (req, res) => {
 
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

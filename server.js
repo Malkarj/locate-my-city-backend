@@ -5,8 +5,15 @@ const path = require('path');
 
 const app = express();
 
+
 // Use Railway's PORT or fallback to 3001 locally
 const PORT = process.env.PORT || 3001;
+
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
 
 // Allow your Vercel frontend in production, localhost in dev
 const allowedOrigins = [
